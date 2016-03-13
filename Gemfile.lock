@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    carrierwave-audio (1.0.0)
+    carrierwave-audio (1.0.1)
       carrierwave
       ruby-sox
       soxi-wrapper

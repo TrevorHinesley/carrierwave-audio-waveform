@@ -81,7 +81,9 @@ If you'd like to add a watermark over the top of your file, use `watermark` like
   process :watermark => [watermark_file_path, output_format, output_options]
 ```
 
-`watermark_file_path` - REQUIRED. Path to where your watermarked file is stored
+`watermark_file_path` - REQUIRED. Path to where your watermarked file is stored.
+
+VERY IMPORTANT: The watermarked file must be a 44.1k, 2-channel mp3. It needs to be a long file. It'll be concatenated to fit the length of your uploaded file.
 
 `output_format` - Optional. The only currently available option is the default, `:mp3`.
 

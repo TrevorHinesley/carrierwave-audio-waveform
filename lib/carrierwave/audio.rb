@@ -37,16 +37,16 @@ module CarrierWave
 
       # Normalize file to -6dB
       normalized_tmp_path = File.join File.dirname(current_path), "tmp_norm_#{current_filename_without_extension}_#{Time.current.to_i}.#{input_options[:type]}"
-      convert_file(current_path, input_options, normalized_tmp_path, input_options, { gain: "-n -6" })
+      convert_file(current_path, input_options, normalized_tmp_path, default_output_options(input_options[:type]), { gain: "-n -6" })
 
       # Combine normalized file and watermark, normalizing final product to 0dB
       final_tmp_path = File.join File.dirname(current_path), "tmp_wtmk_#{current_filename_without_extension}_#{Time.current.to_i}.#{format}"
-      converter = Sox::Cmd.new(combine: :mix)
-      converter.add_input normalized_tmp_path, input_options
-      converter.add_input watermark_file_path, watermark_options
-      converter.set_output final_tmp_path, default_output_options(format).merge(output_options)
-      converter.set_effects({ trim: "0 #{Soxi::Wrapper.file(current_path).seconds}", gain: "-n" })
-      converter.run
+      combiner = Sox::Cmd.new(combine: :mix)
+      combiner.add_input normalized_tmp_path, input_options
+      combiner.add_input watermark_file_path, watermark_options
+      combiner.set_output final_tmp_path, default_output_options(format).merge(output_options)
+      combiner.set_effects({ trim: "0 #{Soxi::Wrapper.file(current_path).seconds}", gain: "-n" })
+      combiner.run
       File.rename final_tmp_path, current_path
       set_content_type format
     end
