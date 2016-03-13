@@ -21,7 +21,7 @@ Or install it yourself as:
 Include CarrierWave::Audio into your CarrierWave uploader class:
 
 ```ruby
-class VideoUploader < CarrierWave::Uploader::Base
+class AudioUploader < CarrierWave::Uploader::Base
   include CarrierWave::Audio
 end
 ```
