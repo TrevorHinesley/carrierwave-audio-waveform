@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'carrierwave/audio/version'
+require 'carrierwave/audio_waveform/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "carrierwave-audio"
-  spec.version       = CarrierWave::Audio::VERSION
+  spec.name          = "carrierwave-audio-waveform"
+  spec.version       = CarrierWave::AudioWaveform::VERSION
   spec.authors       = ["Trevor Hinesley"]
   spec.email         = ["trevor@trevorhinesley.com"]
-  spec.description   = %q{CarrierWave Audio}
-  spec.summary       = %q{Simple SoX wrapper for CarrierWave uploader that allows audio file conversion and watermarking}
-  spec.homepage      = "https://github.com/TrevorHinesley/carrierwave-audio"
+  spec.description   = %q{CarrierWave Audio Waveform}
+  spec.summary       = %q{Generate waveform images from audio files within Carrierwave}
+  spec.homepage      = "https://github.com/TrevorHinesley/carrierwave-audio-waveform"
   spec.license       = "MIT"
 
   spec.files         = Dir["{lib}/**/*"] + ["LICENSE.txt", "README.md"]
@@ -18,9 +18,11 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency 'carrierwave'
-  spec.add_dependency 'ruby-sox'
-  spec.add_dependency 'soxi-wrapper'
+  spec.executables = "waveform"
+
+  spec.add_dependency "carrierwave"
+  spec.add_dependency "ruby-audio"
+  spec.add_dependency "chunky_png"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"

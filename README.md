@@ -1,12 +1,12 @@
-# CarrierWave::Audio
+# CarrierWave::AudioWaveform
 
-Simple SoX wrapper for CarrierWave uploader that allows audio file conversion and watermarking
+Generate waveform images from audio files within Carrierwave
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'carrierwave-audio'
+    gem 'carrierwave-audio-waveform'
 
 And then execute:
 
@@ -14,88 +14,16 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install carrierwave-audio
+    $ gem install carrierwave-audio-waveform
 
 ## Usage
 
-Include CarrierWave::Audio into your CarrierWave uploader class:
+Include CarrierWave::AudioWaveform into your CarrierWave uploader class:
 
 ```ruby
 class AudioUploader < CarrierWave::Uploader::Base
-  include CarrierWave::Audio
+  include CarrierWave::AudioWaveform
 end
-```
-
-This gem provides two new processors for uploading audio files, `convert` and `watermark`. 
-
-### Convert
-
-If you'd like to convert from your initially uploaded file-type to a different one, use `convert` like so:
-
-```ruby
-  version :mp3 do
-    process :convert => [:mp3]
-
-    def full_filename(for_file)
-      "#{super.chomp(File.extname(super))}.mp3"
-    end
-  end
-```
-
-`process :convert` accepts two parameters:
-
-```ruby
-  process :convert => [output_format, output_options]
-```
-
-`output_format` - Optional. The only currently available option is the default, `:mp3`.
-
-`output_options` - Optional. Sox options for the output file (see [ruby-sox](https://github.com/TMXCredit/ruby-sox) and the [SoX documentation](http://sox.sourceforge.net/sox.pdf)). Defaults to:
-
-```ruby
-  {
-    type: output_format.to_s,
-    rate: 44100,
-    channels: 2,
-    compression: 128
-  }
-```
-
-### Watermark
-
-If you'd like to add a watermark over the top of your file, use `watermark` like so:
-
-```ruby
-  version :watermarked do
-    process :watermark => ["#{Rails.root}/db/watermark.mp3"]
-
-    def full_filename(for_file)
-      "#{super.chomp(File.extname(super))}.mp3"
-    end
-  end
-```
-
-`process :watermark` accepts three parameters:
-
-```ruby
-  process :watermark => [watermark_file_path, output_format, output_options]
-```
-
-`watermark_file_path` - REQUIRED. Path to where your watermarked file is stored.
-
-VERY IMPORTANT: The watermarked file must be a 44.1k, 2-channel mp3. It needs to be a long file. It'll be concatenated to fit the length of your uploaded file.
-
-`output_format` - Optional. The only currently available option is the default, `:mp3`.
-
-`output_options` - Optional. Sox options for the output file (see [ruby-sox](https://github.com/TMXCredit/ruby-sox) and the [SoX documentation](http://sox.sourceforge.net/sox.pdf)). Defaults to:
-
-```ruby
-  {
-    type: output_format.to_s,
-    rate: 44100,
-    channels: 2,
-    compression: 128
-  }
 ```
 
 ## Contributing
