@@ -212,22 +212,22 @@ module CarrierWave
 
         def draw_svg(samples, options)
           height_factor = (options[:height] / 2) / samples.max
-
+          
           image = "<svg width=\"0\" height=\"0\">\n"
           image += "  <style type=\"text/css\">\n"
           image += "    svg.waveforms {\n"
           image += "      position: absolute;\n"
-          image += "      stroke-width: 2;\n"
+          image += "      stroke-width: #{options[:stroke_width]};\n"
           image += "      stroke-linecap: round;\n"
           image += "    }\n"
           image += "    .progress-waveform {\n"
-          image += "      stroke: skyblue;\n"
+          image += "      stroke: #{options[:highlight_color]};\n"
           image += "      -webkit-clip-path: polygon(-1% 0%, 5% 0%, 5% 100%, -1% 100%);\n"
           image += "      clip-path: polygon(-1% 0%, 5% 0%, 5% 100%, -1% 100%);\n"
-          image += "      stroke-width: 2;\n"
+          image += "      stroke-width: #{options[:stroke_width]};\n"
           image += "    }\n"
           image += "    .base-waveform {\n"
-          image += "      stroke: black;\n"
+          image += "      stroke: #{options[:base_color]};\n"
           image += "    }\n"
           image += "    svg path {\n"
           image += "      stroke: inherit;\n"
@@ -251,7 +251,7 @@ module CarrierWave
             top = (0 - amplitude)
             bottom = (0 + amplitude)
 
-            if x % options[:gap_width] == 0
+            if x % options[:gap_width].round == 0
               image += "M#{x},#{top} L#{x},#{bottom} "
             end
           end
