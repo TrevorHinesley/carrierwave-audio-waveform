@@ -21,7 +21,12 @@ module CarrierWave
 
       image_filename = Waveformer.generate(current_path, options)
       File.rename image_filename, current_path
-      self.file.instance_variable_set(:@content_type, "image/png")
+
+      if options[:type] == :svg
+        self.file.instance_variable_set(:@content_type, "image/svg+xml")
+      else
+        self.file.instance_variable_set(:@content_type, "image/png")
+      end
     end
 
     def waveform_data options={}

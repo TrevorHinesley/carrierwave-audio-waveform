@@ -12,7 +12,8 @@ module CarrierWave
         :height => 280,
         :background_color => "#666666",
         :color => "#00ccff",
-        :logger => nil
+        :logger => nil,
+        :type => :png
       }
 
       TransparencyMask = "#00ff00"
@@ -80,7 +81,7 @@ module CarrierWave
         #
         def generate(source, options={})
           options = DefaultOptions.merge(options)
-          filename = options[:filename] || self.generate_png_filename(source)
+          filename = options[:filename] || self.generate_image_filename(source, options[:type])
 
           raise ArgumentError.new("No source audio filename given, must be an existing sound file.") unless source
           raise ArgumentError.new("No destination filename given for waveform") unless filename
@@ -117,7 +118,14 @@ module CarrierWave
             end
 
             image = draw samples, options
-            image.save filename
+
+            if options[:type] == :svg
+              File.open(filename, 'w') do |f|
+                f.puts image
+              end
+            else
+              image.save filename
+            end
           end
 
           if source != old_source
@@ -130,10 +138,15 @@ module CarrierWave
           filename
         end
 
-        def generate_png_filename(source)
+        def generate_image_filename(source, image_type)
           ext = File.extname(source)
           source_file_path_without_extension = File.join File.dirname(source), File.basename(source, ext)
-          "#{source_file_path_without_extension}.png"
+
+          if image_type == :svg
+            "#{source_file_path_without_extension}.svg"
+          else
+            "#{source_file_path_without_extension}.png"
+          end
         end
 
         private
@@ -189,8 +202,57 @@ module CarrierWave
           raise RuntimeError.new("Source audio file #{source} could not be read by RubyAudio library -- Hint: non-WAV files are no longer supported, convert to WAV first using something like ffmpeg (RubyAudio: #{e.message})")
         end
 
-        # Draws the given samples using the given options, returns a ChunkyPNG::Image.
         def draw(samples, options)
+          if options[:type] == :svg
+            draw_svg(samples, options)
+          else
+            draw_png(samples, options)
+          end
+        end
+
+        def draw_svg(samples, options)
+          height_factor = (options[:height] / 2) / samples.max
+
+          image = "<svg width=\"0\" height=\"0\">\n"
+          image += "  <symbol id=\"waveform-definition\">\n"
+          image += "    <g transform=\"translate(0, #{options[:height] / 2.0})\">\n"
+          image += "      <path\n"
+          image += "        stroke=\"currentColor\"\n"
+          image += "        d=\""
+
+          samples.each_with_index do |sample, x|
+            next if sample.nil?
+
+            # amplitude = sample * options[:height].to_f / 2.0
+            amplitude = sample * height_factor
+            # amplitude *= 0.95
+
+            top = (0 - amplitude)
+            bottom = (0 + amplitude)
+
+            if x % options[:gap_width] == 0
+              image += "M#{x},#{top} L#{x},#{bottom} "
+            end
+          end
+
+          image += "\"\n"
+          image += "      />\n"
+          image += "    </g>\n"
+          image += "  </symbol>\n"
+          image += "</svg>\n"
+          image += "\n"
+          image += "<svg class=\"waveforms\" viewbox=\"0 0 #{options[:width]} #{options[:height]}\">\n"
+          image += "  <use class=\"base-waveform\" xlink:href=\"#waveform-definition\" />\n"
+          image += "</svg>\n"
+          image += "<svg class=\"waveforms\" viewbox=\"0 0 #{options[:width]} #{options[:height]}\">\n"
+          image += "  <use class=\"progress-waveform\" xlink:href=\"#waveform-definition\" />\n"
+          image += "</svg>\n"
+
+          image
+        end
+
+        # Draws the given samples using the given options, returns a ChunkyPNG::Image.
+        def draw_png(samples, options)
           image = ChunkyPNG::Image.new(options[:width], options[:height],
             options[:background_color] == :transparent ? ChunkyPNG::Color::TRANSPARENT : options[:background_color]
           )
