@@ -211,65 +211,53 @@ module CarrierWave
         end
 
         def draw_svg(samples, options)
-          height_factor = (options[:height] / 2) / samples.max
-          
-          image = "<svg width=\"0\" height=\"0\">\n"
-          image += "  <style type=\"text/css\">\n"
-          image += "    svg.waveforms {\n"
-          image += "      position: absolute;\n"
-          image += "      stroke-width: #{options[:stroke_width]};\n"
-          image += "      stroke-linecap: round;\n"
-          image += "    }\n"
-          image += "    .progress-waveform {\n"
-          image += "      stroke: #{options[:highlight_color]};\n"
-          image += "      -webkit-clip-path: polygon(-1% 0%, 5% 0%, 5% 100%, -1% 100%);\n"
-          image += "      clip-path: polygon(-1% 0%, 5% 0%, 5% 100%, -1% 100%);\n"
-          image += "      stroke-width: #{options[:stroke_width]};\n"
-          image += "    }\n"
-          image += "    .base-waveform {\n"
-          image += "      stroke: #{options[:base_color]};\n"
-          image += "    }\n"
-          image += "    svg path {\n"
-          image += "      stroke: inherit;\n"
-          image += "      stroke-width: inherit;\n"
-          image += "      stroke-linecap: inherit;\n"
-          image += "    }\n"
-          image += "  </style>"
-          image += "  <symbol id=\"waveform-definition\">\n"
-          image += "    <g transform=\"translate(0, #{options[:height] / 2.0})\">\n"
-          image += "      <path\n"
-          image += "        stroke=\"currentColor\"\n"
-          image += "        d=\""
+          image = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3/org/1999/xlink\" viewbox=\"0 0 #{options[:width]} #{options[:height]}\">"
+          image+= "<style>"
+          image+= "svg {"
+          image+= "stroke: #000;"
+          image+= "stroke-width: 1;"
+          image+= "}"
+          image+= "use.waveform-progress {"
+          image+= "stroke: url(#linear);"
+          image+= "stroke-width: 2;"
+          image+= "clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);"
+          image+= "}"
+          image+= "svg path {"
+          image+= "stroke: inherit;"
+          image+= "stroke-width: inherit;"
+          image+= "}"
+          image+= "</style>"
+          image+= "<defs>"
+          image+= '<linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%">'
+          image+= "<stop offset=\"0%\"   stop-color =\"#{options[:gradient_start]}\"/>"
+          image+= "<stop offset=\"1000%\" stop-color =\"#{options[:gradient_stop]}\"/>"
+          image+= "</linearGradient>"
+          uniqueWaveformID = "waveform-#{SecureRandom.uuid}"
+          image+= "<g id=\"#{uniqueWaveformID}\">"
+          image+= '<g transform="translate(0, 125.0)">'
+          image+= '<path stroke="currrentColor" d="'
 
-          samples.each_with_index do |sample, x|
+          samples       = spaced_samples(samples, options[:sample_width], options[:gap_width]) if options[:sample_width]
+          max           = samples.reject {|v| v.nil? }.max
+          height_factor = (options[:height] / 2.0) / max
+
+          samples.each_with_index do |sample, pos|
             next if sample.nil?
 
-            # amplitude = sample * options[:height].to_f / 2.0
             amplitude = sample * height_factor
-            # amplitude *= 0.95
+            top       = (0 - amplitude)
+            bottom    = (0 + amplitude)
 
-            top = (0 - amplitude)
-            bottom = (0 + amplitude)
-
-            if x % options[:gap_width].round == 0
-              image += "M#{x},#{top} L#{x},#{bottom} "
-            end
+            image+= " M#{pos},#{top} V#{bottom}"
           end
 
-          image += "\"\n"
-          image += "      />\n"
-          image += "    </g>\n"
-          image += "  </symbol>\n"
-          image += "</svg>\n"
-          image += "\n"
-          image += "<svg class=\"waveforms\" viewbox=\"0 0 #{options[:width]} #{options[:height]}\">\n"
-          image += "  <use class=\"base-waveform\" xlink:href=\"#waveform-definition\" />\n"
-          image += "</svg>\n"
-          image += "<svg class=\"waveforms\" viewbox=\"0 0 #{options[:width]} #{options[:height]}\">\n"
-          image += "  <use class=\"progress-waveform\" xlink:href=\"#waveform-definition\" />\n"
-          image += "</svg>\n"
-
-          image
+          image+= '"/>'
+          image+= "</g>"
+          image+= "</g>"
+          image+= "</defs>"
+          image+= "<use class=\"waveform-base\" href=\"##{uniqueWaveformID}\" />"
+          image+= "<use class=\"waveform-progress\" href=\"##{uniqueWaveformID}\" />"
+          image+= "</svg>"
         end
 
         # Draws the given samples using the given options, returns a ChunkyPNG::Image.
