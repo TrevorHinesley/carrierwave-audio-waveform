@@ -211,27 +211,32 @@ module CarrierWave
         end
 
         def draw_svg(samples, options)
-          image = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3/org/1999/xlink\" viewbox=\"0 0 #{options[:width]} #{options[:height]}\">"
-          image+= "<style>"
-          image+= "svg {"
-          image+= "stroke: #000;"
-          image+= "stroke-width: 1;"
-          image+= "}"
-          image+= "use.waveform-progress {"
-          image+= "stroke: url(#linear);"
-          image+= "stroke-width: 2;"
-          image+= "clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);"
-          image+= "}"
-          image+= "svg path {"
-          image+= "stroke: inherit;"
-          image+= "stroke-width: inherit;"
-          image+= "}"
-          image+= "</style>"
+          image = "<svg viewbox=\"0 0 #{options[:width]} #{options[:height]}\" preserveAspectRatio=\"none\" width=\"100%\" height=\"100%\">"          
+          if options[:hide_style].nil?
+            image+= "<style>"
+            image+= "svg {"
+            image+= "stroke: #000;"
+            image+= "stroke-width: 1;"
+            image+= "}"
+            image+= "use.waveform-progress {"
+            image+= "stroke-width: 2;"
+            image+= "clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);"
+            image+= "}"
+            image+= "svg path {"
+            image+= "stroke: inherit;"
+            image+= "stroke-width: inherit;"
+            image+= "}"
+            image+= "</style>"
+          end
           image+= "<defs>"
-          image+= '<linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%">'
-          image+= "<stop offset=\"0%\"   stop-color =\"#{options[:gradient_start]}\"/>"
-          image+= "<stop offset=\"1000%\" stop-color =\"#{options[:gradient_stop]}\"/>"
-          image+= "</linearGradient>"
+          if options[:gradient]
+            options[:gradient].each_with_index do |grad, id|
+              image+= "<linearGradient id=\"linear#{id}\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"0%\">"
+              image+= "<stop offset=\"0%\" stop-color=\"#{grad[0]}\"/>"
+              image+= "<stop offset=\"100%\" stop-color=\"#{grad[1]}\"/>"
+              image+= "</linearGradient>"
+            end
+          end
           uniqueWaveformID = "waveform-#{SecureRandom.uuid}"
           image+= "<g id=\"#{uniqueWaveformID}\">"
           image+= '<g transform="translate(0, 125.0)">'
@@ -245,8 +250,8 @@ module CarrierWave
             next if sample.nil?
 
             amplitude = sample * height_factor
-            top       = (0 - amplitude)
-            bottom    = (0 + amplitude)
+            top       = (0 - amplitude).round
+            bottom    = (0 + amplitude).round
 
             image+= " M#{pos},#{top} V#{bottom}"
           end
