@@ -12,7 +12,8 @@ module CarrierWave
         :height => 280,
         :background_color => "#666666",
         :color => "#00ccff",
-        :logger => nil
+        :logger => nil,
+        :type => :png
       }
 
       TransparencyMask = "#00ff00"
@@ -80,7 +81,7 @@ module CarrierWave
         #
         def generate(source, options={})
           options = DefaultOptions.merge(options)
-          filename = options[:filename] || self.generate_png_filename(source)
+          filename = options[:filename] || self.generate_image_filename(source, options[:type])
 
           raise ArgumentError.new("No source audio filename given, must be an existing sound file.") unless source
           raise ArgumentError.new("No destination filename given for waveform") unless filename
@@ -117,7 +118,14 @@ module CarrierWave
             end
 
             image = draw samples, options
-            image.save filename
+
+            if options[:type] == :svg
+              File.open(filename, 'w') do |f|
+                f.puts image
+              end
+            else
+              image.save filename
+            end
           end
 
           if source != old_source
@@ -130,10 +138,15 @@ module CarrierWave
           filename
         end
 
-        def generate_png_filename(source)
+        def generate_image_filename(source, image_type)
           ext = File.extname(source)
           source_file_path_without_extension = File.join File.dirname(source), File.basename(source, ext)
-          "#{source_file_path_without_extension}.png"
+
+          if image_type == :svg
+            "#{source_file_path_without_extension}.svg"
+          else
+            "#{source_file_path_without_extension}.png"
+          end
         end
 
         private
@@ -189,8 +202,71 @@ module CarrierWave
           raise RuntimeError.new("Source audio file #{source} could not be read by RubyAudio library -- Hint: non-WAV files are no longer supported, convert to WAV first using something like ffmpeg (RubyAudio: #{e.message})")
         end
 
-        # Draws the given samples using the given options, returns a ChunkyPNG::Image.
         def draw(samples, options)
+          if options[:type] == :svg
+            draw_svg(samples, options)
+          else
+            draw_png(samples, options)
+          end
+        end
+
+        def draw_svg(samples, options)
+          image = "<svg viewbox=\"0 0 #{options[:width]} #{options[:height]}\" preserveAspectRatio=\"none\" width=\"100%\" height=\"100%\">"          
+          if options[:hide_style].nil?
+            image+= "<style>"
+            image+= "svg {"
+            image+= "stroke: #000;"
+            image+= "stroke-width: 1;"
+            image+= "}"
+            image+= "use.waveform-progress {"
+            image+= "stroke-width: 2;"
+            image+= "clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);"
+            image+= "}"
+            image+= "svg path {"
+            image+= "stroke: inherit;"
+            image+= "stroke-width: inherit;"
+            image+= "}"
+            image+= "</style>"
+          end
+          image+= "<defs>"
+          if options[:gradient]
+            options[:gradient].each_with_index do |grad, id|
+              image+= "<linearGradient id=\"linear#{id}\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"0%\">"
+              image+= "<stop offset=\"0%\" stop-color=\"#{grad[0]}\"/>"
+              image+= "<stop offset=\"100%\" stop-color=\"#{grad[1]}\"/>"
+              image+= "</linearGradient>"
+            end
+          end
+          uniqueWaveformID = "waveform-#{SecureRandom.uuid}"
+          image+= "<g id=\"#{uniqueWaveformID}\">"
+          image+= '<g transform="translate(0, 125.0)">'
+          image+= '<path stroke="currrentColor" d="'
+
+          samples       = spaced_samples(samples, options[:sample_width], options[:gap_width]) if options[:sample_width]
+          max           = samples.reject {|v| v.nil? }.max
+          height_factor = (options[:height] / 2.0) / max
+
+          samples.each_with_index do |sample, pos|
+            next if sample.nil?
+
+            amplitude = sample * height_factor
+            top       = (0 - amplitude).round
+            bottom    = (0 + amplitude).round
+
+            image+= " M#{pos},#{top} V#{bottom}"
+          end
+
+          image+= '"/>'
+          image+= "</g>"
+          image+= "</g>"
+          image+= "</defs>"
+          image+= "<use class=\"waveform-base\" href=\"##{uniqueWaveformID}\" />"
+          image+= "<use class=\"waveform-progress\" href=\"##{uniqueWaveformID}\" />"
+          image+= "</svg>"
+        end
+
+        # Draws the given samples using the given options, returns a ChunkyPNG::Image.
+        def draw_png(samples, options)
           image = ChunkyPNG::Image.new(options[:width], options[:height],
             options[:background_color] == :transparent ? ChunkyPNG::Color::TRANSPARENT : options[:background_color]
           )
