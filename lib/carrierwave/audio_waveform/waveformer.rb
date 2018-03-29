@@ -211,7 +211,7 @@ module CarrierWave
         end
 
         def draw_svg(samples, options)
-          image = "<svg viewbox=\"0 0 #{options[:width]} #{options[:height]}\" preserveAspectRatio=\"none\" width=\"100%\" height=\"100%\">"          
+          image = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3/org/1999/xlink\" viewbox=\"0 0 #{options[:width]} #{options[:height]}\" preserveAspectRatio=\"none\" width=\"100%\" height=\"100%\">"          
           if options[:hide_style].nil?
             image+= "<style>"
             image+= "svg {"
@@ -239,7 +239,7 @@ module CarrierWave
           end
           uniqueWaveformID = "waveform-#{SecureRandom.uuid}"
           image+= "<g id=\"#{uniqueWaveformID}\">"
-          image+= '<g transform="translate(0, 125.0)">'
+          image+= "<g transform=\"translate(0, #{options[:height] / 2.0})\">"
           image+= '<path stroke="currrentColor" d="'
 
           samples       = spaced_samples(samples, options[:sample_width], options[:gap_width]) if options[:sample_width]
