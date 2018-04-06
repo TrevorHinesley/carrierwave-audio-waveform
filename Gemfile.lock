@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    carrierwave-audio-waveform (1.0.4)
+    carrierwave-audio-waveform (1.0.5)
       carrierwave
       oily_png
       ruby-audio
