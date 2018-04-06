@@ -106,7 +106,7 @@ module CarrierWave
           # the larger the frames are, the more "peaky" the waveform should get,
           # perhaps to the point of inaccurately reflecting the actual sound.
           samples = frames(source, options[:width], options[:method]).collect do |frame|
-            frame.inject(0.0) { |sum, peak| sum + peak } / frame.size
+            frame.inject(0.0) { |sum, peak| sum + peak } / frame.size      
           end
 
           @log.timed("\nDrawing...") do
@@ -211,15 +211,34 @@ module CarrierWave
         end
 
         def draw_svg(samples, options)
-          image = "<svg viewbox=\"0 0 #{options[:width]} #{options[:height]}\" preserveAspectRatio=\"none\" width=\"100%\" height=\"100%\">"          
-          if options[:hide_style].nil?
+          wave_image    = ""
+          samples       = spaced_samples(samples, options[:sample_width], options[:gap_width]) if options[:sample_width]
+          height_factor = (options[:height] * 0.85 / 2.0)
+
+          bar_pos = 0
+          samples.each_with_index do |sample, pos|
+            next if sample.nil?
+
+            if (pos%3 == 0)
+              amplitude = sample * height_factor
+              top       = (0 - amplitude).round
+              bottom    = (0 + amplitude).round
+
+              wave_image+= "M#{bar_pos},#{top}V#{bottom}"
+
+              bar_pos += 1
+            end
+          end
+
+          image = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3/org/1999/xlink\" viewbox=\"0 0 #{iPos+1} #{options[:height]}\" preserveAspectRatio=\"none\" width=\"100%\" height=\"100%\">"          
+          if (options[:hide_style].nil? || options[:hide_style] == false)
             image+= "<style>"
             image+= "svg {"
             image+= "stroke: #000;"
-            image+= "stroke-width: 1;"
+            image+= "stroke-width: 0.25;"
             image+= "}"
             image+= "use.waveform-progress {"
-            image+= "stroke-width: 2;"
+            image+= "stroke-width: 0.25;"
             image+= "clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);"
             image+= "}"
             image+= "svg path {"
@@ -239,22 +258,10 @@ module CarrierWave
           end
           uniqueWaveformID = "waveform-#{SecureRandom.uuid}"
           image+= "<g id=\"#{uniqueWaveformID}\">"
-          image+= '<g transform="translate(0, 125.0)">'
+          image+= "<g transform=\"translate(0, #{options[:height] / 2.0})\">"
           image+= '<path stroke="currrentColor" d="'
 
-          samples       = spaced_samples(samples, options[:sample_width], options[:gap_width]) if options[:sample_width]
-          max           = samples.reject {|v| v.nil? }.max
-          height_factor = (options[:height] / 2.0) / max
-
-          samples.each_with_index do |sample, pos|
-            next if sample.nil?
-
-            amplitude = sample * height_factor
-            top       = (0 - amplitude).round
-            bottom    = (0 + amplitude).round
-
-            image+= " M#{pos},#{top} V#{bottom}"
-          end
+          image+= wave_image
 
           image+= '"/>'
           image+= "</g>"
@@ -315,7 +322,7 @@ module CarrierWave
 
         def spaced_samples samples, sample_width = 1, gap_width = 1
           sample_width = sample_width.to_i >= 1 ? sample_width.to_i : 1
-          gap_width = gap_width.to_i >= 1 ? gap_width.to_i : 1
+          gap_width = gap_width.to_i >= 0 ? gap_width.to_i : 1
           width_counter = sample_width
           current_sample_index = 0
           spaced_samples = []
