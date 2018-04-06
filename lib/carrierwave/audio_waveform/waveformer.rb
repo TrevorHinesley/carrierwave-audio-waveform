@@ -215,18 +215,18 @@ module CarrierWave
           samples       = spaced_samples(samples, options[:sample_width], options[:gap_width]) if options[:sample_width]
           height_factor = (options[:height] * 0.85 / 2.0)
 
-          iPos = 0
+          bar_pos = 0
           samples.each_with_index do |sample, pos|
             next if sample.nil?
 
-            if (pos%2 == 0)
+            if (pos%3 == 0)
               amplitude = sample * height_factor
               top       = (0 - amplitude).round
               bottom    = (0 + amplitude).round
 
-              wave_image+= "M#{iPos},#{top}V#{bottom}"
+              wave_image+= "M#{bar_pos},#{top}V#{bottom}"
 
-              iPos+= 1
+              bar_pos += 1
             end
           end
 
