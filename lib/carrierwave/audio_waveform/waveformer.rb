@@ -226,11 +226,11 @@ module CarrierWave
 
               wave_image+= "M#{bar_pos},#{top}V#{bottom}"
 
-              bar_pos += 1
+              bar_pos += (1 + options[:gap_width])
             end
           end
 
-          image = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3/org/1999/xlink\" viewbox=\"0 0 #{iPos+1} #{options[:height]}\" preserveAspectRatio=\"none\" width=\"100%\" height=\"100%\">"          
+          image = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3/org/1999/xlink\" viewbox=\"0 0 #{bar_pos+1} #{options[:height]}\" preserveAspectRatio=\"none\" width=\"100%\" height=\"100%\">"          
           if (options[:hide_style].nil? || options[:hide_style] == false)
             image+= "<style>"
             image+= "svg {"
