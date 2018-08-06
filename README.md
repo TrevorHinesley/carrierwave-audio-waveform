@@ -20,7 +20,7 @@ Or install it yourself as:
 
 First, install [SoX](http://sox.sourceforge.net/) on your local environment and production servers.
 
-Second, install [Audio Waveform](https://github.com/bbc/audiowaveform) on your local environment and production servers.
+Second, install [Audio Waveform](https://github.com/bbc/audiowaveform) on your local environment and production servers if you plan to generate waveform data rather than an image.
 
 Lastly, include CarrierWave::AudioWaveform in your CarrierWave uploader class:
 
@@ -72,6 +72,8 @@ end
 | `logger` | IOStream to log progress | IOStream | `nil` |
 
 ### Waveform Data
+
+>**Note:** Make sure to install [Audio Waveform](https://github.com/bbc/audiowaveform) on your local environment and production servers if you plan to generate waveform data.
 
 To generate an array of waveform data:
 
