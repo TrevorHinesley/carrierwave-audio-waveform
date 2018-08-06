@@ -25,10 +25,12 @@ module CarrierWave
         #   :set_extension_before_processing => Symbolized extension (:wav, :mp3, etc.)
         #   This is useful because CarrierWave will send files in with the wrong extension sometimes.
         #   For instance, if this is nested under a version, that version may be an .mp3, but its parent
+        #   might be .wav, so even though the version is a different extension, the file type will be read
+        #   from the original file's extension (not the version file) if you don't set this parameter.
         #
         #   :pixels_per_second => The number of pixels per second to evaluate.
         #
-        #   :bits => 8 or 16 bit precision
+        #   :bits => 8- or 16-bit precision
         #
         #   :logger => IOStream to log progress to.
         #
