@@ -259,7 +259,7 @@ module CarrierWave
           uniqueWaveformID = "waveform-#{SecureRandom.uuid}"
           image+= "<g id=\"#{uniqueWaveformID}\">"
           image+= "<g transform=\"translate(0, #{options[:height] / 2.0})\">"
-          image+= '<path stroke="currrentColor" d="'
+          image+= '<path stroke="currentColor" d="'
 
           image+= wave_image
 
