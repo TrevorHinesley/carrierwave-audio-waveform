@@ -67,7 +67,7 @@ end
 | `gap_width` | Integer specifying the width of the gaps between samples. If `sample_width` is specified, this will be the size of the gaps between samples in pixels. | Integer >= 1 | `nil` |
 | `height` | The image's height | Integer | `280` |
 | `width` | The image's width | Integer | `1800` |
-| `auto_width` | Millseconds per pixel. This will overwrite the width of the final waveform image depending on the length of the audio file. Example: `100` => 1 pixel per 100 msec; a one minute audio file will result in a width of 600 pixels | Integer | `nil` |
+| `auto_width` | Milliseconds per pixel. This will overwrite the width of the final waveform image depending on the length of the audio file. Example: `100` => 1 pixel per 100 msec; a one minute audio file will result in a width of 600 pixels | Integer | `nil` |
 | `method` | The method used to read sample frames, `:peak` or `:rms`. Peak is the norm. It uses the maximum amplitude per sample to generate the waveform, so the waveform looks more dynamic. RMS is more of an average, and the waveform isn't as jerky. | Symbol (`:peak` or `:rms`) | `:peak` |
 | `logger` | IOStream to log progress | IOStream | `nil` |
 
